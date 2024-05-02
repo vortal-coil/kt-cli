@@ -70,7 +70,9 @@ func ParseKeyValues(data string) map[string]interface{} {
 	m := make(map[string]interface{})
 	for _, item := range items {
 		x := strings.Split(item, "=")
-		m[x[0]] = x[1]
+		if len(x) == 2 {
+			m[x[0]] = x[1]
+		}
 	}
 
 	return m
