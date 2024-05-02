@@ -2,7 +2,6 @@ package pkg
 
 import (
 	"errors"
-	"github.com/kt-soft-dev/kt-cli/internal"
 )
 
 func CheckToken(token string) (string, error) {
@@ -11,7 +10,7 @@ func CheckToken(token string) (string, error) {
 		return "", err
 	}
 	if request.Error.Code != 0 {
-		internal.Print(request.Error.Message)
+		currentLogger("Failed to get user: %s", request.Error.Message)
 		return "", errors.New(request.Error.Message)
 	}
 

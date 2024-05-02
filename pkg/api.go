@@ -21,7 +21,7 @@ type ApiResponse struct {
 	Result map[string]interface{} `json:"result,omitempty"`
 }
 
-// CheckApiAlive @todo
+// CheckApiAlive checks if the API is alive by sending a GET request to the /ping endpoint
 func CheckApiAlive() bool {
 	client := KtCustomClient()
 	response, err := client.Get(ktUrl + "/ping")
