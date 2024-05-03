@@ -57,7 +57,7 @@ func ApiRequest(token string, method string, params map[string]interface{}) (*Ap
 		"params": params,
 	}
 
-	jsonData := JsonToReader(params)
+	jsonData := jsonToReader(params)
 	if jsonData == nil {
 		return nil, errors.New("failed to convert json to reader")
 	}

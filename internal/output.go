@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/kt-soft-dev/kt-cli/pkg"
 	"log"
+	"os"
 )
 
 const (
@@ -19,6 +20,7 @@ const (
 var printMode = ModeLog
 
 // SetPrintMode sets the way of printing messages. See constants like Mode* for available modes
+// This mode is ignored in some cases in interactive mode
 func SetPrintMode(mode int) {
 	printMode = mode
 	pkg.SetLogger(Print)
@@ -35,5 +37,20 @@ func Print(content string, params ...interface{}) {
 		fmt.Print(text)
 	default:
 		log.Println(text)
+	}
+}
+
+var errorLogger = log.New(os.Stderr, "[ERROR] ", log.LstdFlags|log.Lmsgprefix)
+
+func PrintError(err string, params ...interface{}) {
+	text := fmt.Sprintf(err, params...)
+
+	switch printMode {
+	case ModePlain:
+		_, _ = fmt.Fprintln(os.Stderr, text)
+	case ModeNoNewline:
+		_, _ = fmt.Fprint(os.Stderr, text)
+	default:
+		errorLogger.Println(text)
 	}
 }

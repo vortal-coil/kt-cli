@@ -41,7 +41,7 @@ func main() {
 	if !*debug {
 		defer func() {
 			if err := recover(); err != nil {
-				internal.Print("%v", err)
+				internal.PrintError("%v", err)
 				os.Exit(1)
 			}
 		}()
@@ -50,7 +50,7 @@ func main() {
 	// globalContext, cancel := context.WithCancel(context.Background())
 	config, err := internal.LoadConfig(*configFilename)
 	if err != nil {
-		internal.Print("Failed to load config file and/or create a new one. Exiting...")
+		internal.PrintError("Failed to load config file and/or create a new one. Exiting...")
 		os.Exit(1)
 	}
 
@@ -59,7 +59,7 @@ func main() {
 		defer func() {
 			err = internal.SaveConfig(config, *configFilename)
 			if err != nil {
-				internal.Print("Failed to save config file")
+				internal.PrintError("Failed to save config file")
 			}
 		}()
 	}
@@ -70,27 +70,27 @@ func main() {
 
 	switch {
 	case *method != "":
-		paramsMap := pkg.ParseKeyValues(*params)
+		paramsMap := internal.ParseKeyValues(*params)
 		resp, err := pkg.ApiRequest(config.Token, *method, paramsMap)
-		err = pkg.GetActualError(resp, err)
+		err = internal.GetActualError(resp, err)
 		if err != nil {
-			internal.Print(err.Error())
+			internal.PrintError(err.Error())
 			return
 		}
 
-		internal.Print(pkg.JsonToString(resp.Result, *pretty))
+		internal.Print(internal.JsonToString(resp.Result, *pretty))
 
 	case *ping:
 		if pkg.CheckApiAlive() {
 			internal.Print("API is alive")
 		} else {
-			internal.Print("API is not alive")
+			internal.PrintError("API is not alive")
 		}
 
 	case *download != "":
 		savePath := strings.TrimSpace(*downloadPath)
 		if savePath == "" {
-			internal.Print("Save path is required")
+			internal.PrintError("Save path is required")
 			return
 		} else if savePath == "." {
 			internal.Print("Save path is set to current directory. You can change it by -act.download.path flag")
@@ -101,7 +101,7 @@ func main() {
 		writer := bufio.NewWriter(&buffer)
 		name, _, err := pkg.DownloadFile(config.Token, *download, writer, &pkg.CryptoInfo{Password: *passwd})
 		if err != nil {
-			internal.Print(err.Error())
+			internal.PrintError(err.Error())
 			return
 		}
 
@@ -112,14 +112,14 @@ func main() {
 
 		out, err := os.Create(savePath)
 		if err != nil {
-			internal.Print("Failed to create file %s", savePath)
+			internal.PrintError("Failed to create file %s", savePath)
 			return
 		}
 		defer out.Close()
 
 		_, err = io.Copy(out, &buffer)
 		if err != nil {
-			internal.Print("Failed to save file %s", savePath)
+			internal.PrintError("Failed to save file %s", savePath)
 		}
 
 	default:
@@ -128,7 +128,7 @@ func main() {
 		if *auth != "" {
 			id, err := pkg.CheckToken(*auth)
 			if err != nil {
-				internal.Print("Failed to check token")
+				internal.PrintError("Failed to check token")
 				return
 			}
 
