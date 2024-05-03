@@ -4,8 +4,10 @@ import (
 	"bufio"
 	"bytes"
 	"flag"
+	"fmt"
 	"github.com/kt-soft-dev/kt-cli/internal"
 	"github.com/kt-soft-dev/kt-cli/pkg"
+	"golang.org/x/crypto/ssh/terminal"
 	"io"
 	"os"
 	"strings"
@@ -20,7 +22,7 @@ func main() {
 	printMode := flag.Int("output", internal.ModeLog, "Output mode (0 - log with timestamp, 1 - plain log, 2 - no newline)")
 	notInteractive := flag.Bool("no-interactive", false, "Do not ask for any input, use default values")
 	noConfigSave := flag.Bool("no-save", false, "Do not save the config file on exit (including token)")
-	auth := flag.String("token", "", "Set auth token for future requests (will be saved in config file)")
+	auth := flag.String("token", "", "Set auth token for future requests (will be saved in config file; also you can use environment variable KT_CLI_TOKEN)")
 	pretty := flag.Bool("pretty", false, "Pretty-print JSON responses")
 	passwd := flag.String("passwd", "", "Set password for encryption/decryption. Also you can use environment variable KT_CLI_PASSWD")
 
@@ -40,6 +42,9 @@ func main() {
 
 	internal.SetPrintMode(*printMode)
 	pkg.SetInteractiveMode(!*notInteractive)
+	if *auth == "" {
+		*auth = os.Getenv("KT_CLI_TOKEN")
+	}
 	if *passwd == "" {
 		*passwd = os.Getenv("KT_CLI_PASSWD")
 	}
@@ -72,8 +77,25 @@ func main() {
 		}()
 	}
 
+	// Set the token from the command line flag to config
 	if *auth != "" {
 		config.Token = *auth
+	}
+
+	// If the token is not set and we are not in non-interactive mode, ask for it now
+	if config.Token == "" && !*notInteractive {
+		internal.Print("Enter your access token to use most functions or leave it blank to proceed with anonymous requests." +
+			"\n When you enter your password, the characters will not be displayed." +
+			"\n This is a security measure to prevent it from being stored in SSH logs.\n")
+		fmt.Print("Access token: ")
+		password, err := terminal.ReadPassword(0)
+		if err == nil && len(password) > 0 {
+			if internal.CheckTokenAndAssign(string(password), config) != nil {
+				config.Token = string(password)
+			}
+		} else {
+			internal.PrintError(err.Error())
+		}
 	}
 
 	switch {
@@ -187,15 +209,7 @@ func main() {
 		// Usually, in case of empty method and non-empty token,
 		// we should take this as a request to validate and store the token
 		if *auth != "" {
-			id, err := pkg.CheckToken(*auth)
-			if err != nil {
-				internal.PrintError("Failed to check token")
-				return
-			}
-
-			internal.Print("Logged in as user id %s", id)
-			config.Token = *auth
-			config.UserID = id
+			_ = internal.CheckTokenAndAssign(config.Token, config)
 			// Config will be saved because of the deferring above (if no -no-save flag is set)
 			return
 		}

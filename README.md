@@ -92,6 +92,7 @@ Flags for requests and other actions:
 
 Environment variables used by the client:
 - **KT_CLI_PASSWD** - password for encryption and decryption
+- **KT_CLI_TOKEN** - access token for API requests
 
 ## Documentation
 
