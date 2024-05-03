@@ -23,6 +23,11 @@ func DownloadFile(token string, fileId string, writer io.Writer, cryptoInfo *Cry
 		return "", 0, errors.New(filesList.Error.Message)
 	}
 
+	count, _ := filesList.Result["count"].(float64)
+	if count == 0 {
+		return "", 0, errors.New("file not found or you have not access to it")
+	}
+
 	// At the moment we cast the list to the interface{} and then to the []interface{} to avoid the type assertion
 	// In the future, we will create a struct for the response and use it directly
 	rawList, ok := filesList.Result["list"]
@@ -57,7 +62,7 @@ func DownloadFile(token string, fileId string, writer io.Writer, cryptoInfo *Cry
 			// Password is provided, but the key is empty. We need to get and decrypt the key
 			cryptoInfo, err = GetCryptoInfo(token, disk, cryptoInfo.Password)
 			if err != nil {
-				return "", 0, fmt.Errorf("failed to get crypto cryptoInfo: %w", err)
+				return "", 0, fmt.Errorf("failed to get crypto info: %w", err)
 			}
 		} else {
 			return "", 0, errors.New("file is encrypted and no any data provided")
@@ -99,12 +104,15 @@ func DownloadFile(token string, fileId string, writer io.Writer, cryptoInfo *Cry
 		currentLogger("File downloaded. Decrypting now")
 		message := crypto.NewPGPMessage(buf.Bytes())
 
-		publicKeyRing, privateKeyRing, err := GetKeyRings(cryptoInfo.PublicKey, cryptoInfo.RawCryptoKey, []byte(cryptoInfo.Password))
+		_, privateKeyRing, err := GetKeyRings(cryptoInfo.PublicKey, cryptoInfo.RawCryptoKey, []byte(cryptoInfo.Password))
 		if err != nil {
 			return "", 0, err
 		}
 
-		decrypted, err := privateKeyRing.Decrypt(message, publicKeyRing, crypto.GetUnixTime())
+		decrypted, err := privateKeyRing.Decrypt(message, nil, 0)
+		if err != nil {
+			return "", 0, err
+		}
 		privateKeyRing.ClearPrivateParams()
 
 		currentLogger("File decrypted. Saving now")
