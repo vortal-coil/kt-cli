@@ -29,7 +29,7 @@ func JsonToReader(data map[string]interface{}) io.ReadCloser {
 	return stringReadCloser
 }
 
-// JsonToString converts a map to a string. It makes easier to print json data. Pretty-prints the json if pretty is true
+// JsonToString converts a map to a string. It makes it easier to print json data. Pretty-prints the json if pretty is true
 func JsonToString(data map[string]interface{}, pretty bool) string {
 	if pretty {
 		jsonData, err := json.MarshalIndent(data, "", "    ")
@@ -48,6 +48,8 @@ func JsonToString(data map[string]interface{}, pretty bool) string {
 	return string(jsonData)
 }
 
+// ParseKeyValues parses a string with key=value pairs separated by spaces and returns a map with the key and value
+// It is used to parse the flags of the command line and other similar cases
 func ParseKeyValues(data string) map[string]interface{} {
 	lastQuote := rune(0)
 	f := func(c rune) bool {
@@ -78,8 +80,8 @@ func ParseKeyValues(data string) map[string]interface{} {
 	return m
 }
 
-// GetActualError returns an error if the response has an error or if there was an error passed as argument
-// It is useful to avoid checking if the response is nil and if the response error is nil every time you make a request
+// GetActualError returns an error if the response has an error or if there was an error passed as argument.
+// It is useful to avoid checking if the response is nil, and if the response error is nil every time you make a request
 func GetActualError(response *ApiResponse, err error) error {
 	if err != nil {
 		return err

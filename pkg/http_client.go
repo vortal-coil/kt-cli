@@ -7,6 +7,7 @@ import (
 )
 
 // KtCustomClient returns a custom http client for ktCloud API
+// It has a timeout of 5 seconds and transport with a timeout of 3 seconds
 func KtCustomClient() *http.Client {
 	transport := http.Transport{
 		Proxy: http.ProxyFromEnvironment,

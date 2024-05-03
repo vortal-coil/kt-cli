@@ -65,6 +65,27 @@ Output can be displayed in different modes. By default, output is displayed in u
 - **1** - plain log (simple output, no timestamp)
 - **2** - just like plain log but without new line at the end
 
+## Flags and environment variables
+
+The client supports the following flags:
+- **-debug** - enable debug mode (more verbose output)
+- **-config** - path to the configuration file (default: `config.yaml`)
+- **-output** - output mode (see above for details)
+- **-no-save** - do not save the configuration file after changes by the client. For example, a client usually saves the token after login. This flag disables this behavior.
+- **-token** - token for API requests. If this flag is set, the client will use the provided token for API requests instead of the one stored in the configuration file. Client will save the token to the configuration file if the **no-save** flag is not set.
+- **-pretty** - pretty print JSON output. It looks better but takes more space and is useless if you want to parse the output.
+- **-passwd** - password for encryption and decryption. **It is highly recommended to use environment variable for this purpose instead of passing the password as a flag**.
+
+Flags for requests and other actions:
+- **-params** - parameters for the request. Value should be a string with space-separated key-value pairs. For example: `param1=value1 param2=value2`.
+- **-act.ping** - check the connection to the ktCloud.
+- **-act.method** - create a request to the API. Value should be a string with the method name.
+- **-act.download** - download a file from the ktCloud. Value should be a string with the file ID. You can get it using another flag or from the API.
+  - **-act.download.path** - path to save the downloaded file. If not set, the file will be saved in the current directory.
+
+Environment variables used by the client:
+- **KT_CLI_PASSWD** - password for encryption and decryption
+
 ## Contributing
 
 Contributions are welcome. Please feel free to submit a pull request or open an issue on the GitHub repository.

@@ -9,6 +9,7 @@ import (
 	"net/http"
 )
 
+// DownloadFile downloads a file from the cloud. If the file is encrypted, it will be decrypted using the provided.
 func DownloadFile(token string, fileId string, writer io.Writer, cryptoInfo *CryptoInfo) (fileName string, numBytes int64, err error) {
 	if fileId == "" {
 		return "", 0, errors.New("file id is required")
@@ -22,6 +23,8 @@ func DownloadFile(token string, fileId string, writer io.Writer, cryptoInfo *Cry
 		return "", 0, errors.New(filesList.Error.Message)
 	}
 
+	// At the moment we cast the list to the interface{} and then to the []interface{} to avoid the type assertion
+	// In the future, we will create a struct for the response and use it directly
 	rawList, ok := filesList.Result["list"]
 	if !ok {
 		return "", 0, errors.New("bad file get response")
@@ -88,6 +91,8 @@ func DownloadFile(token string, fileId string, writer io.Writer, cryptoInfo *Cry
 
 	if encrypted {
 		currentLogger("File is encrypted, downloading first")
+		// At the moment, we download the file to the buffer and then decrypt it.
+		// In the future, we will decrypt the file using the stream
 		buf := new(bytes.Buffer)
 		numBytes, err = io.Copy(buf, resp.Body)
 

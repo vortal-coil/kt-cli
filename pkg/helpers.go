@@ -2,12 +2,15 @@ package pkg
 
 import "fmt"
 
+// GetUserDisk returns the user's default disk or the disk with the desired id.
+// It also returns the crypto info for the disk
 func GetUserDisk(token string, disk string) (string, *CryptoInfo, error) {
 	resp, err := ApiRequest(token, "disks.get", nil)
 	if err != nil {
 		return "", nil, err
 	}
 
+	// At the moment results are not a structure, so we need to cast it to a map
 	list := resp.Result["list"].([]interface{})
 	if len(list) == 0 {
 		return "", nil, fmt.Errorf("users default disk not found")

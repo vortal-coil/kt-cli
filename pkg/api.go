@@ -8,9 +8,13 @@ import (
 	"net/url"
 )
 
+// ktUrl is the base url for the ktCloud API
 const ktUrl = "https://resistance.go-kt.com"
+
+// apiUrl is the url to JSON-RPC endpoint
 const apiUrl = ktUrl + "/json-rpc"
 
+// ApiResponse is the JSON-RPC response structure
 type ApiResponse struct {
 	JsonRPC string `json:"jsonrpc"`
 	ID      uint   `json:"id"`
@@ -38,6 +42,7 @@ func CheckApiAlive() bool {
 	return response.StatusCode == 200 || string(text) == "Pong!"
 }
 
+// ApiRequest sends a JSON-RPC request to the API. Token can be rewritten in the params map
 func ApiRequest(token string, method string, params map[string]interface{}) (*ApiResponse, error) {
 	if params == nil {
 		params = make(map[string]interface{})

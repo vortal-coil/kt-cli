@@ -5,17 +5,28 @@ import (
 	"github.com/ProtonMail/gopenpgp/v2/helper"
 )
 
+// CryptoInfo is a struct that holds all the necessary information for encryption/decryption
 type CryptoInfo struct {
+	// EncryptedCryptoKey is the encrypted crypto key received from the server. You should decrypt it with a password
 	EncryptedCryptoKey string
-	RawCryptoKey       string
-	PublicKey          string
-	Password           string
+	// RawCryptoKey is the decrypted crypto key.
+	//You can use it for encryption/decryption.
+	//It usually is not provided by the server, you should decrypt EncryptedCryptoKey with a password
+	RawCryptoKey string
+	// PublicKey is the public key of the user. It is used for encryption and signature verification
+	PublicKey string
+	// Password is used to decrypt the EncryptedCryptoKey, also it is used as passphrase for the private key
+	Password string
 }
 
+// IsCryptoReady checks if the CryptoInfo is ready for encryption/decryption.
+// It should have the crypto key to be decrypted
 func (c *CryptoInfo) IsCryptoReady() bool {
 	return c.RawCryptoKey != ""
 }
 
+// GetCryptoInfo gets the CryptoInfo from the server.
+// It decrypts the crypto key if it is encrypted and a password is provided
 func GetCryptoInfo(token string, disk string, password string) (*CryptoInfo, error) {
 	_, cryptoInfo, err := GetUserDisk(token, disk)
 	if err != nil {
@@ -39,6 +50,7 @@ func GetCryptoInfo(token string, disk string, password string) (*CryptoInfo, err
 	return cryptoInfo, nil
 }
 
+// GetKeyRings gets the public and private key rings from the armored keys
 func GetKeyRings(publicKey string, privateKey string, passwd []byte) (public *crypto.KeyRing, private *crypto.KeyRing, err error) {
 	privateKeyObj, err := crypto.NewKeyFromArmored(privateKey)
 	if err != nil {
