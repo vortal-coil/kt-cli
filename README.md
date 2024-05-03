@@ -72,6 +72,7 @@ Output can be displayed in different modes. By default, output is displayed in u
 The client supports the following flags:
 - **-debug** - enable debug mode (more verbose output)
 - **-config** - path to the configuration file (default: `config.yaml`)
+- **-no-interactive** - disable interactive mode. In this mode, the client will not ask for any input from the user. It is useful when running the client in a script or automated environment.
 - **-output** - output mode (see above for details)
 - **-no-save** - do not save the configuration file after changes by the client. For example, a client usually saves the token after login. This flag disables this behavior.
 - **-token** - token for API requests. If this flag is set, the client will use the provided token for API requests instead of the one stored in the configuration file. Client will save the token to the configuration file if the **no-save** flag is not set.
@@ -84,6 +85,10 @@ Flags for requests and other actions:
 - **-act.method** - create a request to the API. Value should be a string with the method name.
 - **-act.download** - download a file from the ktCloud. Value should be a string with the file ID. You can get it using another flag or from the API.
   - **-act.download.path** - path to save the downloaded file. If not set, the file will be saved in the current directory.
+- **-act.upload** - upload a file to the ktCloud. Value should be a string with the path to the file. Also you can upload with **stdin**. In this case, value should be empty.
+  - **-act.upload.name** - name of the file on the ktCloud. If not set, the file will be uploaded with its original name. For **stdin** uploads this flag is required.
+  - **-act.upload.folder** - folder ID where the file should be uploaded. If not set, the file will be uploaded to the root folder.
+  - **-act.upload.disk** - disk ID where the file should be uploaded.
 
 Environment variables used by the client:
 - **KT_CLI_PASSWD** - password for encryption and decryption

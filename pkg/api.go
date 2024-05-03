@@ -13,6 +13,7 @@ const ktUrl = "https://resistance.go-kt.com"
 
 // apiUrl is the url to JSON-RPC endpoint
 const apiUrl = ktUrl + "/json-rpc"
+const uploadUrl = ktUrl + "/upload"
 
 // ApiResponse is the JSON-RPC response structure
 type ApiResponse struct {

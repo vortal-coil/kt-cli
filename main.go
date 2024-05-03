@@ -18,24 +18,32 @@ func main() {
 	// Global flags
 	configFilename := flag.String("config", "config.yaml", "Set config file path")
 	printMode := flag.Int("output", internal.ModeLog, "Output mode (0 - log with timestamp, 1 - plain log, 2 - no newline)")
+	notInteractive := flag.Bool("no-interactive", false, "Do not ask for any input, use default values")
 	noConfigSave := flag.Bool("no-save", false, "Do not save the config file on exit (including token)")
 	auth := flag.String("token", "", "Set auth token for future requests (will be saved in config file)")
 	pretty := flag.Bool("pretty", false, "Pretty-print JSON responses")
-	passwd := flag.String("passwd", "", "Set password for encryption. Also you can use environment variable KT_CLI_PASSWD")
+	passwd := flag.String("passwd", "", "Set password for encryption/decryption. Also you can use environment variable KT_CLI_PASSWD")
 
 	// Actions to perform
 	method := flag.String("act.method", "", "Call API method")
 	ping := flag.Bool("act.ping", false, "Check if API is alive")
 	download := flag.String("act.download", "", "Download file by file ID")
 	downloadPath := flag.String("act.download.path", ".", "Set path to save downloaded file")
+	upload := flag.String("act.upload", "", "Upload file by path; stdin is also supported")
+	uploadName := flag.String("act.upload.name", "", "Set file name for upload (required for stdin)")
+	uploadDisk := flag.String("act.upload.disk", "", "Set disk for upload")
+	uploadFolder := flag.String("act.upload.folder", "", "Set folder for upload")
+	// @todo replace file method
 
 	params := flag.String("params", "", "Set API method key=value parameters separated by space (format: k=v k=v k=v...)")
 	flag.Parse()
 
 	internal.SetPrintMode(*printMode)
+	pkg.SetInteractiveMode(!*notInteractive)
 	if *passwd == "" {
 		*passwd = os.Getenv("KT_CLI_PASSWD")
 	}
+	isStdIn := internal.IsStdin()
 
 	// When not in debug mode, catch panics and print them in more user-friendly way like error messages
 	if !*debug {
@@ -85,6 +93,59 @@ func main() {
 			internal.Print("API is alive")
 		} else {
 			internal.PrintError("API is not alive")
+		}
+
+	case *upload != "" || isStdIn:
+		var reader io.Reader
+		var name string
+
+		if isStdIn {
+			name = *uploadName
+			if name == "" {
+				internal.PrintError("File name is required for stdin upload. Use -act.upload.name flag")
+				return
+			}
+			reader = os.Stdin
+		} else {
+			path := *upload
+			if path == "" {
+				path = pkg.ScanOrDefault("Enter file path: ", "")
+				if path == "" {
+					internal.PrintError("File path is required")
+					return
+				}
+			}
+
+			fileInfo, err := os.Stat(path)
+			if err != nil {
+				internal.PrintError("Failed to access file")
+				return
+			}
+			if fileInfo.IsDir() {
+				// @todo directory uploading
+				internal.PrintError("Directory uploading is not supported yet")
+				return
+			}
+
+			file, err := os.Open(path)
+			if err != nil {
+				internal.PrintError("Failed to open file")
+				return
+			}
+
+			if *uploadName != "" {
+				name = *uploadName
+			} else {
+				name = file.Name()
+			}
+
+			reader = file
+		}
+
+		_, err := pkg.UploadFile(config.Token, name, "", *uploadDisk, *uploadFolder, &pkg.CryptoInfo{Password: *passwd}, reader)
+		if err != nil {
+			internal.PrintError(err.Error())
+			return
 		}
 
 	case *download != "":

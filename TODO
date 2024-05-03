@@ -1,4 +1,6 @@
 - Avoid using maps for API responses. Instead, use a structs with the necessary information. Generate if from backend in future.
-- API responses should support assigning to struct
+- API responses and errors should support assigning to struct
 - Streaming encrypting, decrypting, download for big files
 - Support local crypto keys for those who don't want to use password encrypting
+- Streaming download for big files
+- Less code in main.go

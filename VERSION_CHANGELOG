@@ -1,0 +1,4 @@
+v0.2
+- Downloading files from cloud storage and decrypting them.
+- Decrypting files with password provided by flag or environment variable.
+- Uploading files and encrypting them.
