@@ -21,17 +21,21 @@ func main() {
 	noConfigSave := flag.Bool("no-save", false, "Do not save the config file on exit (including token)")
 	auth := flag.String("token", "", "Set auth token for future requests (will be saved in config file)")
 	pretty := flag.Bool("pretty", false, "Pretty-print JSON responses")
-	passwd := flag.String("passwd", "", "Set password for encryption if needed")
+	passwd := flag.String("passwd", "", "Set password for encryption. Also you can use environment variable KT_CLI_PASSWD")
 
 	// Actions to perform
 	method := flag.String("act.method", "", "Call API method")
 	ping := flag.Bool("act.ping", false, "Check if API is alive")
 	download := flag.String("act.download", "", "Download file by file ID")
 	downloadPath := flag.String("act.download.path", ".", "Set path to save downloaded file")
+
 	params := flag.String("params", "", "Set API method key=value parameters separated by space (format: k=v k=v k=v...)")
 	flag.Parse()
 
 	internal.SetPrintMode(*printMode)
+	if *passwd == "" {
+		*passwd = os.Getenv("KT_CLI_PASSWD")
+	}
 
 	// When not in debug mode, catch panics and print them in more user-friendly way like error messages
 	if !*debug {
