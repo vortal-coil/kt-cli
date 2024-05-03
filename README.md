@@ -1,5 +1,7 @@
 # ktCloud CLI Client
 
+[![Go Reference](https://pkg.go.dev/badge/github.com/kt-soft-dev/kt-cli#section-directories.svg)](https://pkg.go.dev/github.com/kt-soft-dev/kt-cli#section-directories)
+
 This is a command-line interface (CLI) client for the ktCloud service. It is written in Go and provides peer-to-peer encryption and zero-trust security. The client allows you to interact with the ktCloud service, enabling you to download, upload, and use the API for ktCloud.
 
 ## Features
@@ -85,6 +87,13 @@ Flags for requests and other actions:
 
 Environment variables used by the client:
 - **KT_CLI_PASSWD** - password for encryption and decryption
+
+## Documentation
+
+This readme file is exhaustive enough to get started with the client.
+Code is well documented, see [godoc](https://pkg.go.dev/github.com/kt-soft-dev/kt-cli#section-directories) for details.
+
+Click on "Show internal" button to see client-specific documentation, or "pkg" to see library documentation.
 
 ## Contributing
 
