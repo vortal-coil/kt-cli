@@ -99,3 +99,19 @@ func ByteCount(b int64) string {
 	return fmt.Sprintf("%.1f %ciB",
 		float64(b)/float64(div), "KMGTPE"[exp])
 }
+
+// DiskIdOrDefault returns the disk id if it is not empty, otherwise it returns the default disk id
+// It is useful for most users, they usually have only one disk
+func DiskIdOrDefault(config *Config, diskId string) string {
+	if diskId == "." || diskId == "" {
+		disk, _, err := pkg.GetUserDisk(config.Token, "")
+		if err != nil {
+			PrintError(err.Error())
+			return ""
+		}
+
+		return disk.ID
+	}
+
+	return diskId
+}

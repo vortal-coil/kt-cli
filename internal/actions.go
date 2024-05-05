@@ -80,6 +80,8 @@ func ActionDownload(config *Config) {
 
 // ActionUpload uploads a file to the cloud. The file can be provided by path or by stdin.
 func ActionUpload(config *Config, isStdIn bool) {
+	*UploadDisk = DiskIdOrDefault(config, *UploadDisk)
+
 	var reader io.Reader
 	var name string
 
@@ -134,6 +136,8 @@ func ActionUpload(config *Config, isStdIn bool) {
 }
 
 func ActionFilesList(config *Config) {
+	*FilesList = DiskIdOrDefault(config, *FilesList)
+
 	// @todo offsets for big lists
 	filesList, err := pkg.ApiRequest(config.Token, "files.get", map[string]interface{}{"disk": *FilesList, "offset": 0})
 	if err != nil {
