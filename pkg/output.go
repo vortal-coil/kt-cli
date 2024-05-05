@@ -14,6 +14,9 @@ func init() {
 	currentLogger = emptyLogger
 }
 
+// SetLogger sets the logger for the library.
+// By default, the library doesn't log anything.
+// You can set your own logger using this function, but it's not required
 func SetLogger(logger Logger) {
 	currentLogger = logger
 }

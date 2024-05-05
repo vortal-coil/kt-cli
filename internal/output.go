@@ -40,8 +40,11 @@ func Print(content string, params ...interface{}) {
 	}
 }
 
+// errorLogger is the singleton for logging errors
 var errorLogger = log.New(os.Stderr, "[ERROR] ", log.LstdFlags|log.Lmsgprefix)
 
+// PrintError prints the error message with optional parameters in the way defined by printMode
+// It's a wrapper around fmt.Print that respects printMode
 func PrintError(err string, params ...interface{}) {
 	text := fmt.Sprintf(err, params...)
 

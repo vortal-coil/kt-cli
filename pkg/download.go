@@ -10,6 +10,9 @@ import (
 )
 
 // DownloadFile downloads a file from the cloud. If the file is encrypted, it will be decrypted using the provided.
+// If the file is encrypted and no crypto info provided, it will return an error.
+// You need to provide at least your crypto password in CryptoInfo to decrypt the file.
+// If no keys are provided, it will try to get the crypto info from the server and decrypt your key with the password.
 func DownloadFile(token string, fileId string, writer io.Writer, cryptoInfo *CryptoInfo) (fileName string, numBytes int64, err error) {
 	if fileId == "" {
 		return "", 0, errors.New("file id is required")

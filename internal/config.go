@@ -11,6 +11,7 @@ type Config struct {
 	Token  string `yaml:"token"`
 }
 
+// CreateDefaultConfig creates an empty configuration
 func CreateDefaultConfig() *Config {
 	return &Config{}
 }

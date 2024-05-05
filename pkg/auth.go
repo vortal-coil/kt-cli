@@ -4,8 +4,8 @@ import (
 	"errors"
 )
 
-// CheckToken checks if the token is valid by calling auth.getMe method and returns the user id
-func CheckToken(token string) (string, error) {
+// GetUserID checks if the token is valid by calling auth.getMe method and returns the user id
+func GetUserID(token string) (string, error) {
 	request, err := ApiRequest(token, "auth.getMe", nil)
 	if err != nil {
 		return "", err

@@ -13,6 +13,8 @@ const ktUrl = "https://resistance.go-kt.com"
 
 // apiUrl is the url to JSON-RPC endpoint
 const apiUrl = ktUrl + "/json-rpc"
+
+// uploadUrl is the url to the upload endpoint, it's separated from the JSON-RPC endpoint
 const uploadUrl = ktUrl + "/upload"
 
 // ApiResponse is the JSON-RPC response structure
@@ -25,6 +27,8 @@ type ApiResponse struct {
 	} `json:"error,omitempty"`
 	Result map[string]interface{} `json:"result,omitempty"`
 }
+
+// @todo more structures instead of map[string]interface{}, better with auto generation
 
 // CheckApiAlive checks if the API is alive by sending a GET request to the /ping endpoint
 func CheckApiAlive() bool {

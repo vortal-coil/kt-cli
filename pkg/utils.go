@@ -26,6 +26,7 @@ func jsonToReader(data map[string]interface{}) io.ReadCloser {
 	return stringReadCloser
 }
 
+// readerToMap converts a reader to a map. It provides an easier way to read json data from http response
 func readerToMap(reader io.Reader) (map[string]interface{}, error) {
 	data := make(map[string]interface{})
 	err := json.NewDecoder(reader).Decode(&data)

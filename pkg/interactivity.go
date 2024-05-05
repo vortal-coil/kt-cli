@@ -11,6 +11,10 @@ func init() {
 	isInteractive = false
 }
 
+// SetInteractiveMode sets the interactive mode.
+// If it is set to true, the library will ask for user input.
+// By default, the library is not interactive.
+// Interactive mode is used for CLI applications when you need to ask for user input.
 func SetInteractiveMode(interactive bool) {
 	isInteractive = interactive
 }

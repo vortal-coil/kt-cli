@@ -13,19 +13,33 @@ This is a command-line interface (CLI) client for the ktCloud service. It is wri
 
 ## Installation
 
-To get the ktCloud CLI client or its libraries, you need to have Go installed on your machine. Once Go is installed, you can download and install the ktCloud CLI client using the `go get` command:
+Download the latest release from the "**Releases**" page and unpack it to a directory in your PATH.
+It is recommended to rename the binary to `ktcloud` for easier usage.
+
+## Building from sources
+
+To get the ktCloud CLI client or its libraries, you need to have Go installed on your machine. 
+
+Also you need `task` installed, you can download it from [here](https://taskfile.dev/installation/).
+
+To build the client, run the following commands:
 
 ```bash
-go get github.com/kt-soft-dev/kt-cli
+git clone "https://github.com/kt-soft-dev/kt-cli"
+cd kt-cli
+task build-all
 ```
 
-For ready binaries see releases page.
 
-## Using as library for your developments
+For ready binaries, see the "**Releases**" page.
+
+## Using as a library for your Go projects
 
 You can use this repository as a library in your Go projects.
 To do this,
 you need to import the package **github.com/kt-soft-dev/kt-cli/pkg** and use the functions provided by the client.
+
+Code is well documented, see [godoc](https://pkg.go.dev/github.com/kt-soft-dev/kt-cli#section-directories) for details.
 
 
 ## Making API request

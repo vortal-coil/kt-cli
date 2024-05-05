@@ -13,6 +13,11 @@ import (
 	"time"
 )
 
+// UploadFile uploads a file to the cloud.
+// If encryption is enabled, it will encrypt the file before uploading.
+// The file will be encrypted using the public key provided in the CryptoInfo struct.
+// You need public key to encrypt the file.
+// If you don't have the public key, you can get it from the server using the GetCryptoInfo function.
 func UploadFile(token string, name string, rewriteMime string, disk string, folder string, cryptoInfo *CryptoInfo, reader io.Reader) (fileId string, err error) {
 	currentLogger("Uploading file %s", name)
 
