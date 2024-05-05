@@ -92,6 +92,8 @@ The client supports the following flags:
 - **-token** - token for API requests. If this flag is set, the client will use the provided token for API requests instead of the one stored in the configuration file. Client will save the token to the configuration file if the **no-save** flag is not set.
 - **-pretty** - pretty print JSON output. It looks better but takes more space and is useless if you want to parse the output.
 - **-passwd** - password for encryption and decryption. **It is highly recommended to use environment variable for this purpose instead of passing the password as a flag**.
+- **-public** - path to public key file for encryption. Will be downloaded if not set.
+- **-private** - path to private key file for decryption. Will be downloaded and decrypted used your provided password if the flag is not set.
 
 Flags for requests and other actions:
 - **-params** - parameters for the request. Value should be a string with space-separated key-value pairs. For example: `param1=value1 param2=value2`.
@@ -103,7 +105,10 @@ Flags for requests and other actions:
   - **-act.upload.name** - name of the file on the ktCloud. If not set, the file will be uploaded with its original name. For **stdin** uploads this flag is required.
   - **-act.upload.folder** - folder ID where the file should be uploaded. If not set, the file will be uploaded to the root folder.
   - **-act.upload.disk** - disk ID where the file should be uploaded.
-- **act.files** - get a list of files in the cloud. Value should be a string with the folder ID or "**.**" to fetch user's default disk.
+- **-act.files** - get a list of files in the cloud. Value should be a string with the folder ID or "**.**" to fetch user's default disk.
+- **-act.keys** - export disks public/private key pairs to files
+  - **act.keys.public** - file name for the public key (default is **public_key.pub**)
+  - **act.keys.private** - file name for the private key (default is **private_key.asc**)
 
 Environment variables used by the client:
 - **KT_CLI_PASSWD** - password for encryption and decryption

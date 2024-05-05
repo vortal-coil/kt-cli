@@ -102,16 +102,34 @@ func ByteCount(b int64) string {
 
 // DiskIdOrDefault returns the disk id if it is not empty, otherwise it returns the default disk id
 // It is useful for most users, they usually have only one disk
-func DiskIdOrDefault(config *Config, diskId string) string {
-	if diskId == "." || diskId == "" {
-		disk, _, err := pkg.GetUserDisk(config.Token, "")
-		if err != nil {
-			PrintError(err.Error())
-			return ""
-		}
-
-		return disk.ID
+func DiskIdOrDefault(config *Config, diskId string) (string, *pkg.Disk, error) {
+	if diskId == "." {
+		diskId = ""
 	}
 
-	return diskId
+	disk, _, err := pkg.GetUserDisk(config.Token, "")
+	if err != nil {
+		return diskId, nil, err
+	}
+
+	return disk.ID, disk, nil
+}
+
+func NewDefaultCryptoInfo() *pkg.CryptoInfo {
+	info := &pkg.CryptoInfo{}
+	info.Password = *Passwd
+
+	b, err := os.ReadFile(*PublicKeyFile)
+	if err == nil {
+		Print("Using public key from file %s", *PublicKeyFile)
+		info.PublicKey = string(b)
+	}
+
+	b, err = os.ReadFile(*PrivateKeyFile)
+	if err == nil {
+		Print("Using private key from file %s", *PrivateKeyFile)
+		info.EncryptedCryptoKey = string(b)
+	}
+
+	return info
 }

@@ -20,11 +20,17 @@ var (
 	Auth           = flag.String("token", "", "Set auth token for future requests (will be saved in config file; also you can use environment variable KT_CLI_TOKEN)")
 	Pretty         = flag.Bool("pretty", false, "Pretty-print JSON responses")
 	Passwd         = flag.String("passwd", "", "Set password for encryption/decryption. Also you can use environment variable KT_CLI_PASSWD")
+	PublicKeyFile  = flag.String("public", "public_key.pub", "Set public key file path for encryption/decryption (will be downloaded from the server if empty)")
+	PrivateKeyFile = flag.String("private", "private_key.asc", "Set private key file path for encryption/decryption (will be downloaded and decrypted from the server if empty)")
 
 	// Actions to perform
 
 	Method = flag.String("act.method", "", "Call API method")
 	Ping   = flag.Bool("act.ping", false, "Check if API is alive")
+
+	GetKeys            = flag.String("act.keys", "", "Download keys for the provided disk (\".\" for default disk)")
+	GetKeysPublicName  = flag.String("act.keys.public", "public_key.pub", "Set public key name for download")
+	GetKeysPrivateName = flag.String("act.keys.private", "private_key.asc", "Set private key name for download")
 
 	Download     = flag.String("act.download", "", "Download file by file ID")
 	DownloadPath = flag.String("act.download.path", ".", "Set path to save downloaded file")

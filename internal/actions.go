@@ -41,6 +41,40 @@ func ActionDefault(config *Config) {
 	flag.PrintDefaults()
 }
 
+func ActionGetKeys(config *Config) {
+	_, disk, err := DiskIdOrDefault(config, *GetKeys)
+	if err != nil {
+		PrintError(err.Error())
+		return
+	}
+
+	cryptoInfo := &pkg.CryptoInfo{
+		EncryptedCryptoKey: disk.CryptoKey,
+		PublicKey:          disk.PublicKey,
+		Password:           *Passwd,
+	}
+
+	if !cryptoInfo.IsCryptoReady() {
+		err = cryptoInfo.TryGetReady(config.Token, disk.ID)
+		if err != nil {
+			PrintError(err.Error())
+			return
+		}
+	}
+
+	err = os.WriteFile(*GetKeysPublicName, []byte(cryptoInfo.PublicKey), 0755)
+	if err != nil {
+		PrintError(err.Error())
+	}
+
+	err = os.WriteFile(*GetKeysPrivateName, []byte(cryptoInfo.RawCryptoKey), 0755)
+	if err != nil {
+		PrintError(err.Error())
+	}
+
+	Print("Keys exported: %s, %s", *GetKeysPublicName, *GetKeysPrivateName)
+}
+
 // ActionDownload downloads a file by its ID and saves it to the specified path
 func ActionDownload(config *Config) {
 	savePath := strings.TrimSpace(*DownloadPath)
@@ -54,7 +88,7 @@ func ActionDownload(config *Config) {
 	// @todo streaming download for big files
 	var buffer bytes.Buffer
 	writer := bufio.NewWriter(&buffer)
-	name, _, err := pkg.DownloadFile(config.Token, *Download, writer, &pkg.CryptoInfo{Password: *Passwd})
+	name, _, err := pkg.DownloadFile(config.Token, *Download, writer, NewDefaultCryptoInfo())
 	if err != nil {
 		PrintError(err.Error())
 		return
@@ -80,7 +114,7 @@ func ActionDownload(config *Config) {
 
 // ActionUpload uploads a file to the cloud. The file can be provided by path or by stdin.
 func ActionUpload(config *Config, isStdIn bool) {
-	*UploadDisk = DiskIdOrDefault(config, *UploadDisk)
+	*UploadDisk, _, _ = DiskIdOrDefault(config, *UploadDisk)
 
 	var reader io.Reader
 	var name string
@@ -128,7 +162,7 @@ func ActionUpload(config *Config, isStdIn bool) {
 		reader = file
 	}
 
-	_, err := pkg.UploadFile(config.Token, name, "", *UploadDisk, *UploadFolder, &pkg.CryptoInfo{Password: *Passwd}, reader)
+	_, err := pkg.UploadFile(config.Token, name, "", *UploadDisk, *UploadFolder, NewDefaultCryptoInfo(), reader)
 	if err != nil {
 		PrintError(err.Error())
 		return
@@ -136,7 +170,7 @@ func ActionUpload(config *Config, isStdIn bool) {
 }
 
 func ActionFilesList(config *Config) {
-	*FilesList = DiskIdOrDefault(config, *FilesList)
+	*FilesList, _, _ = DiskIdOrDefault(config, *FilesList)
 
 	// @todo offsets for big lists
 	filesList, err := pkg.ApiRequest(config.Token, "files.get", map[string]interface{}{"disk": *FilesList, "offset": 0})

@@ -64,6 +64,9 @@ func main() {
 	case *internal.Download != "":
 		internal.ActionDownload(config)
 
+	case *internal.GetKeys != "":
+		internal.ActionGetKeys(config)
+
 	case *internal.FilesList != "":
 		internal.ActionFilesList(config)
 
