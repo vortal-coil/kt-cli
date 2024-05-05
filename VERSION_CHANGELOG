@@ -3,3 +3,4 @@ v0.3
 - Updated vulnerable dependencies
 - Files list command
 - Disk ID is not required now without your own need, it will be automatically detected
+- Refactored code
