@@ -1,6 +1,8 @@
 package pkg
 
 import (
+	"errors"
+	"fmt"
 	"github.com/ProtonMail/gopenpgp/v2/crypto"
 	"github.com/ProtonMail/gopenpgp/v2/helper"
 )
@@ -23,6 +25,31 @@ type CryptoInfo struct {
 // It should have the crypto key to be decrypted
 func (c *CryptoInfo) IsCryptoReady() bool {
 	return c.RawCryptoKey != ""
+}
+
+// TryGetReady tries to get the CryptoInfo ready for encryption/decryption.
+// It tries to decrypt the key with the password.
+func (c *CryptoInfo) TryGetReady(token string, disk string) error {
+	if c.IsCryptoReady() {
+		return nil
+	}
+
+	if c.Password == "" && c.RawCryptoKey == "" {
+		// Crypto data is provided, but password and key are empty
+		return errors.New("no password or keys provided")
+	} else if c.RawCryptoKey == "" {
+		// Password is provided, but the key is empty. We need to get and decrypt the key
+		crypt, err := GetCryptoInfo(token, disk, c.Password)
+		if err != nil {
+			return fmt.Errorf("failed to get crypto info: %w", err)
+		}
+
+		*c = *crypt
+	} else {
+		return errors.New("no any data provided")
+	}
+
+	return nil
 }
 
 // GetCryptoInfo gets the CryptoInfo from the server.

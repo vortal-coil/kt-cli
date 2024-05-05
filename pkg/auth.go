@@ -15,8 +15,13 @@ func GetUserID(token string) (string, error) {
 		return "", errors.New(request.Error.Message)
 	}
 
-	if id, ok := request.Result["id"]; ok {
-		return id.(string), nil
+	user, err := MapToStruct[UserInfo](request.Result)
+	if err != nil {
+		return "", err
+	}
+
+	if user.ID != "" {
+		return user.ID, nil
 	}
 
 	return "", errors.New("failed to get user id from response")

@@ -36,17 +36,10 @@ func UploadFile(token string, name string, rewriteMime string, disk string, fold
 		cryptoVal = "1"
 		currentLogger("Encrypting")
 
+		// If the crypto info is not ready, we need to get it. Nil check is not necessary because we have already checked it
 		if !cryptoInfo.IsCryptoReady() {
-			if cryptoInfo.Password == "" && cryptoInfo.RawCryptoKey == "" {
-				return "", errors.New("encryption is enabled but no password or keys provided")
-			} else if cryptoInfo.RawCryptoKey == "" {
-				// Password is provided, but the key is empty. We need to get and decrypt the key
-				cryptoInfo, err = GetCryptoInfo(token, disk, cryptoInfo.Password)
-				if err != nil {
-					return "", fmt.Errorf("failed to get crypto info: %w", err)
-				}
-			} else {
-				return "", errors.New("encryption is enabled but no any crypto data provided")
+			if err := cryptoInfo.TryGetReady(token, disk); err != nil {
+				return "", fmt.Errorf("failed to encrypt file: %w", err)
 			}
 		}
 
@@ -118,23 +111,29 @@ func UploadFile(token string, name string, rewriteMime string, disk string, fold
 	}
 	defer responseInfo.Body.Close()
 
-	response, err := readerToMap(responseInfo.Body)
+	rawResponse, err := readerToMap(responseInfo.Body)
 	if err != nil {
 		return "", err
 	}
 
-	if errorObj, ok := response["error"]; ok {
-		errorInfo := errorObj.(map[string]interface{})
-		errorCode := int(errorInfo["code"].(float64))
-		errorText := errorInfo["message"].(string)
-		return "", fmt.Errorf("%s: %s (code %d)", responseInfo.Status, errorText, errorCode)
+	response, err := MapToStruct[ApiResponse](rawResponse)
+	if err != nil {
+		return "", err
+	}
+
+	if response.Error.Code != 0 {
+		return "", fmt.Errorf("%s: %s (code %d)", responseInfo.Status, response.Error.Message, response.Error.Code)
 	} else if responseInfo.StatusCode != http.StatusOK {
 		return "", errors.New(responseInfo.Status)
 	}
 
-	if resultObj, ok := response["result"]; ok {
-		result := resultObj.(map[string]interface{})
-		fileId = result["file_id"].(string)
+	result, err := MapToStruct[UploadResult](response.Result)
+	if err != nil {
+		return "", err
+	}
+
+	if result.Ok {
+		fileId = result.FileID
 		if fileId == "" {
 			return "", errors.New("response file_id is empty")
 		}
@@ -143,5 +142,5 @@ func UploadFile(token string, name string, rewriteMime string, disk string, fold
 		return fileId, nil
 	}
 
-	return "", nil
+	return "", errors.New("upload failed (unknown reason)")
 }

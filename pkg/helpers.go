@@ -4,42 +4,41 @@ import "fmt"
 
 // GetUserDisk returns the user's default disk or the disk with the desired id.
 // It also returns the crypto info for the disk
-func GetUserDisk(token string, disk string) (string, *CryptoInfo, error) {
+func GetUserDisk(token string, disk string) (*Disk, *CryptoInfo, error) {
 	resp, err := ApiRequest(token, "disks.get", nil)
 	if err != nil {
-		return "", nil, err
+		return nil, nil, err
 	}
 
 	// At the moment results are not a structure, so we need to cast it to a map
-	list := resp.Result["list"].([]interface{})
-	if len(list) == 0 {
-		return "", nil, fmt.Errorf("users default disk not found")
+	disks, err := MapToStruct[DisksInfo](resp.Result)
+	if err != nil {
+		return nil, nil, err
+	}
+	if len(disks.List) == 0 {
+		return nil, nil, fmt.Errorf("users default disk not found")
 	}
 
-	var diskInfo map[string]interface{}
-	for _, nextDisk := range list {
-		nextDiskMap := nextDisk.(map[string]interface{})
-
+	var diskInfo *Disk
+	for _, nextDisk := range disks.List {
 		// If the disk is set, we need to find the disk with the desired id
-		if disk != "" && nextDiskMap["id"].(string) == disk {
-			diskInfo = nextDiskMap
+		if disk != "" && nextDisk.ID == disk {
+			diskInfo = nextDisk
 			break
 		}
 
 		// If the disk is not set, we need to return the first disk as default
 		if disk == "" {
-			diskInfo = nextDiskMap
+			diskInfo = nextDisk
 			break
 		}
 	}
 
 	if diskInfo == nil {
-		return "", nil, fmt.Errorf("disk not found")
+		return nil, nil, fmt.Errorf("disk not found")
 	}
 
-	id := diskInfo["id"].(string)
-	cryptoKey := diskInfo["crypto_key"].(string)
-	publicKey := diskInfo["public_key"].(string)
-
-	return id, &CryptoInfo{EncryptedCryptoKey: cryptoKey, PublicKey: publicKey}, nil
+	cryptoKey := diskInfo.CryptoKey
+	publicKey := diskInfo.PublicKey
+	return diskInfo, &CryptoInfo{EncryptedCryptoKey: cryptoKey, PublicKey: publicKey}, nil
 }

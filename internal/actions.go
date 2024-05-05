@@ -149,20 +149,12 @@ func ActionFilesList(config *Config) {
 		return
 	}
 
-	// At the moment we cast the list to the interface{} and then to the []interface{} to avoid the type assertion
-	// In the future, we will create a struct for the response and use it directly
-	rawList, ok := filesList.Result["list"]
-	if !ok {
-		PrintError("Bad file get response")
+	resp, err := pkg.MapToStruct[pkg.FilesGetResponse](filesList.Result)
+	if err != nil {
+		PrintError(err.Error())
 		return
 	}
-
-	list, ok := rawList.([]interface{})
-	if !ok {
-		PrintError("Files list parameter is not a list itself")
-		return
-	}
-	if len(list) == 0 {
+	if len(resp.List) == 0 {
 		PrintError("File list is empty")
 		return
 	}
@@ -173,9 +165,8 @@ func ActionFilesList(config *Config) {
 	tbl := table.New("ID", "Name", "Type", "Size")
 	tbl.WithHeaderFormatter(headerFmt).WithFirstColumnFormatter(columnFmt)
 
-	for _, fileInfo := range list {
-		fileMap := fileInfo.(map[string]interface{})
-		tbl.AddRow(fileMap["id"], fileMap["name"], fileMap["type_desc"], ByteCount(int64(fileMap["size"].(float64))))
+	for _, fileInfo := range resp.List {
+		tbl.AddRow(fileInfo.ID, fileInfo.Name, fileInfo.TypeDesc, ByteCount(int64(fileInfo.Size)))
 	}
 
 	tbl.Print()

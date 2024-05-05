@@ -103,6 +103,7 @@ Flags for requests and other actions:
   - **-act.upload.name** - name of the file on the ktCloud. If not set, the file will be uploaded with its original name. For **stdin** uploads this flag is required.
   - **-act.upload.folder** - folder ID where the file should be uploaded. If not set, the file will be uploaded to the root folder.
   - **-act.upload.disk** - disk ID where the file should be uploaded.
+- **act.files** - get a list of files in the cloud. Value should be a string with the folder ID or "**.**" to fetch user's default disk.
 
 Environment variables used by the client:
 - **KT_CLI_PASSWD** - password for encryption and decryption

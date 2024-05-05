@@ -17,17 +17,6 @@ const apiUrl = ktUrl + "/json-rpc"
 // uploadUrl is the url to the upload endpoint, it's separated from the JSON-RPC endpoint
 const uploadUrl = ktUrl + "/upload"
 
-// ApiResponse is the JSON-RPC response structure
-type ApiResponse struct {
-	JsonRPC string `json:"jsonrpc"`
-	ID      uint   `json:"id"`
-	Error   struct {
-		Code    uint   `json:"code"`
-		Message string `json:"message"`
-	} `json:"error,omitempty"`
-	Result map[string]interface{} `json:"result,omitempty"`
-}
-
 // @todo more structures instead of map[string]interface{}, better with auto generation
 
 // CheckApiAlive checks if the API is alive by sending a GET request to the /ping endpoint

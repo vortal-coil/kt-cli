@@ -26,49 +26,35 @@ func DownloadFile(token string, fileId string, writer io.Writer, cryptoInfo *Cry
 		return "", 0, errors.New(filesList.Error.Message)
 	}
 
-	count, _ := filesList.Result["count"].(float64)
-	if count == 0 {
+	resp, err := MapToStruct[FileGetByIdResponse](filesList.Result)
+	if err != nil {
+		return "", 0, err
+	}
+
+	if resp.Count == 0 {
 		return "", 0, errors.New("file not found or you have not access to it")
 	}
 
-	// At the moment we cast the list to the interface{} and then to the []interface{} to avoid the type assertion
-	// In the future, we will create a struct for the response and use it directly
-	rawList, ok := filesList.Result["list"]
-	if !ok {
-		return "", 0, errors.New("bad file get response")
-	}
-
-	list, ok := rawList.([]interface{})
-	if !ok {
-		return "", 0, errors.New("files list parameter is not a list itself")
-	}
+	list := resp.List
 	if len(list) == 0 {
 		return "", 0, errors.New("file not found or you have not access to it")
 	}
 
-	fileInfo := list[0].(map[string]interface{})
+	fileInfo := list[0]
 
-	name := fileInfo["name"].(string)
-	encrypted := fileInfo["encrypted"].(bool)
-	mimeType := fileInfo["mime"].(string)
-	disk := fileInfo["disk"].(string)
+	name := fileInfo.Name
+	encrypted := fileInfo.Encrypted
+	mimeType := fileInfo.Mime
+	disk := fileInfo.Disk
 
 	// If the file is encrypted and no any crypto info provided, we need to get it
 	if encrypted && (cryptoInfo == nil || !cryptoInfo.IsCryptoReady()) {
 		if cryptoInfo == nil {
-			// No any crypto info provided
-			return "", 0, errors.New("file is encrypted and no any crypto cryptoInfo provided")
-		} else if cryptoInfo.Password == "" && cryptoInfo.RawCryptoKey == "" {
-			// Crypto data is provided, but password and key are empty
-			return "", 0, errors.New("file is encrypted and no password or keys provided")
-		} else if cryptoInfo.RawCryptoKey == "" {
-			// Password is provided, but the key is empty. We need to get and decrypt the key
-			cryptoInfo, err = GetCryptoInfo(token, disk, cryptoInfo.Password)
-			if err != nil {
-				return "", 0, fmt.Errorf("failed to get crypto info: %w", err)
-			}
-		} else {
-			return "", 0, errors.New("file is encrypted and no any data provided")
+			return "", 0, errors.New("file is encrypted but no crypto info provided")
+		}
+
+		if err := cryptoInfo.TryGetReady(token, disk); err != nil {
+			return "", 0, fmt.Errorf("failed to decrypt file: %w", err)
 		}
 	}
 
@@ -82,19 +68,24 @@ func DownloadFile(token string, fileId string, writer io.Writer, cryptoInfo *Cry
 		return "", 0, errors.New(downloadRequest.Error.Message)
 	}
 
-	fileUrl, ok := downloadRequest.Result["url"].(string)
-	if !ok {
-		return "", 0, errors.New("failed to get file url")
+	downloadResponse, err := MapToStruct[DownloadResponse](downloadRequest.Result)
+	if err != nil {
+		return "", 0, fmt.Errorf("cannot get download link: %w", err)
 	}
 
-	resp, err := http.Get(fileUrl)
+	fileUrl := downloadResponse.URL
+	if len(fileUrl) == 0 {
+		return "", 0, errors.New("file url is empty")
+	}
+
+	fileResp, err := http.Get(fileUrl)
 	if err != nil {
 		return "", 0, err
 	}
-	defer resp.Body.Close()
+	defer fileResp.Body.Close()
 
-	if resp.StatusCode != http.StatusOK {
-		return "", 0, fmt.Errorf("bad response status code: %s", resp.Status)
+	if fileResp.StatusCode != http.StatusOK {
+		return "", 0, fmt.Errorf("bad response status code: %s", fileResp.Status)
 	}
 
 	if encrypted {
@@ -102,7 +93,7 @@ func DownloadFile(token string, fileId string, writer io.Writer, cryptoInfo *Cry
 		// At the moment, we download the file to the buffer and then decrypt it.
 		// In the future, we will decrypt the file using the stream
 		buf := new(bytes.Buffer)
-		numBytes, err = io.Copy(buf, resp.Body)
+		numBytes, err = io.Copy(buf, fileResp.Body)
 
 		currentLogger("File downloaded. Decrypting now")
 		message := crypto.NewPGPMessage(buf.Bytes())
@@ -122,7 +113,7 @@ func DownloadFile(token string, fileId string, writer io.Writer, cryptoInfo *Cry
 		numBytes, err = io.Copy(writer, decrypted.NewReader())
 	} else {
 		currentLogger("File is not encrypted, downloading as-is")
-		numBytes, err = io.Copy(writer, resp.Body)
+		numBytes, err = io.Copy(writer, fileResp.Body)
 	}
 
 	if err != nil {
