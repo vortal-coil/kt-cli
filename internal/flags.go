@@ -33,6 +33,8 @@ var (
 	UploadName   = flag.String("act.upload.name", "", "Set file name for upload (required for stdin)")
 	UploadDisk   = flag.String("act.upload.disk", "", "Set disk for upload")
 	UploadFolder = flag.String("act.upload.folder", "", "Set folder for upload")
+
+	FilesList = flag.String("act.files", "", "List files in provided disk")
 	// @todo method to replace files contents
 )
 

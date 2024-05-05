@@ -5,7 +5,9 @@ import (
 	"bytes"
 	"flag"
 	"fmt"
+	"github.com/fatih/color"
 	"github.com/kt-soft-dev/kt-cli/pkg"
+	"github.com/rodaine/table"
 	"golang.org/x/crypto/ssh/terminal"
 	"io"
 	"os"
@@ -129,6 +131,50 @@ func ActionUpload(config *Config, isStdIn bool) {
 		PrintError(err.Error())
 		return
 	}
+}
+
+func ActionFilesList(config *Config) {
+	// @todo offsets for big lists
+	filesList, err := pkg.ApiRequest(config.Token, "files.get", map[string]interface{}{"disk": *FilesList, "offset": 0})
+	if err != nil {
+		PrintError(err.Error())
+		return
+	}
+	if filesList.Error.Code != 0 {
+		PrintError(filesList.Error.Message)
+		return
+	}
+
+	// At the moment we cast the list to the interface{} and then to the []interface{} to avoid the type assertion
+	// In the future, we will create a struct for the response and use it directly
+	rawList, ok := filesList.Result["list"]
+	if !ok {
+		PrintError("Bad file get response")
+		return
+	}
+
+	list, ok := rawList.([]interface{})
+	if !ok {
+		PrintError("Files list parameter is not a list itself")
+		return
+	}
+	if len(list) == 0 {
+		PrintError("File list is empty")
+		return
+	}
+
+	headerFmt := color.New(color.FgGreen, color.Underline).SprintfFunc()
+	columnFmt := color.New(color.FgYellow).SprintfFunc()
+
+	tbl := table.New("ID", "Name", "Type", "Size")
+	tbl.WithHeaderFormatter(headerFmt).WithFirstColumnFormatter(columnFmt)
+
+	for _, fileInfo := range list {
+		fileMap := fileInfo.(map[string]interface{})
+		tbl.AddRow(fileMap["id"], fileMap["name"], fileMap["type_desc"], ByteCount(int64(fileMap["size"].(float64))))
+	}
+
+	tbl.Print()
 }
 
 func ActionApiCall(config *Config) {

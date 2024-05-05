@@ -64,6 +64,9 @@ func main() {
 	case *internal.Download != "":
 		internal.ActionDownload(config)
 
+	case *internal.FilesList != "":
+		internal.ActionFilesList(config)
+
 	default:
 		internal.ActionDefault(config)
 	}

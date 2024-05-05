@@ -3,6 +3,7 @@ package internal
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"github.com/kt-soft-dev/kt-cli/pkg"
 	"os"
 	"strings"
@@ -82,4 +83,19 @@ func IsStdin() bool {
 	}
 
 	return fi.Size() > 0
+}
+
+// ByteCount converts bytes to human-readable format
+func ByteCount(b int64) string {
+	const unit = 1024
+	if b < unit {
+		return fmt.Sprintf("%d B", b)
+	}
+	div, exp := int64(unit), 0
+	for n := b / unit; n >= unit; n /= unit {
+		div *= unit
+		exp++
+	}
+	return fmt.Sprintf("%.1f %ciB",
+		float64(b)/float64(div), "KMGTPE"[exp])
 }
