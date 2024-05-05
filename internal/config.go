@@ -2,7 +2,7 @@ package internal
 
 import (
 	"gopkg.in/yaml.v2"
-	"io/ioutil"
+	"os"
 )
 
 // Config represents the structure of global configuration
@@ -18,7 +18,7 @@ func CreateDefaultConfig() *Config {
 
 // LoadConfig loads the configuration from a YAML file or creates the empty one
 func LoadConfig(filename string) (*Config, error) {
-	data, err := ioutil.ReadFile(filename)
+	data, err := os.ReadFile(filename)
 	if err != nil {
 		defaultConf := CreateDefaultConfig()
 		_ = SaveConfig(defaultConf, filename)
@@ -41,7 +41,7 @@ func SaveConfig(config *Config, filename string) error {
 		return err
 	}
 
-	err = ioutil.WriteFile(filename, data, 0644)
+	err = os.WriteFile(filename, data, 0644)
 	if err != nil {
 		return err
 	}
